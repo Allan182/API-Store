@@ -1,24 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_application_1/Model/Produto.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class Produto {
-  final String nome;
-  final double valorCusto;
-  final double valorVenda;
-  final DateFormat validade;
-  final int idFabricante;
-  final int idProduto;  
 
-  const Produto(this.idProduto, this.nome, this.valorCusto, this.valorVenda,
-      this.validade, this.idFabricante);
-}
 
 final List<Produto> _carrinho = [];
 
 class Produtos extends StatefulWidget {
-  Produtos({Key? key}) : super(key: key);
+  const Produtos({Key? key}) : super(key: key);
 
   @override
   State<Produtos> createState() => _ProdutosState();
@@ -41,77 +33,59 @@ class _ProdutosState extends State<Produtos> {
 
     if (data.length != 0) {
       for (var e in data) {
-        listaProdutos.add(Produto(e["idproduto"], e["nome"], e["valorCusto"],
-            e["valorVenda"], e["validade"], e["fabricante_idfabricante:"]));
+        listaProdutos.add(Produto.fromJson(e));
       }
     }
-//    print(listaProdutos);
+    setState((){});
   }
 
   @override
   Widget build(BuildContext context) {
-    var c = NumberFormat.currency(locale: "pt_BR", symbol: "R\$");
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Produtos'),
-      ),
-      body: ListView.builder(
-          itemCount: listaProdutos.length,
-          itemBuilder: (BuildContext context, int index) {
-            final noCarrinho = _carrinho.contains(listaProdutos[index]);
+        appBar: AppBar(
+          title: const Text('Produtos'),
+        ),
+        body: ListView.builder(
+            itemCount: listaProdutos.length,
+            itemBuilder: (BuildContext context, int index) {
+              Produto produto = listaProdutos[index];
 
-            return ListTile(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            ProdutoDetalhe(produto: listaProdutos[index])));
-              },
-              title: Text(listaProdutos[index].nome),
-              subtitle: Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: listaProdutos[index]
-                    .tags
-                    .map((tag) => Chip(label: Text('#$tag')))
-                    .toList(),
-              ),
-              trailing: Text(c.format(listaProdutos[index].preco)),
-              leading: IconButton(
-                onPressed: () {
-                  setState(() {
-                    if (noCarrinho) {
-                      _carrinho.remove(listaProdutos[index]);
-                    } else {
-                      _carrinho.add(listaProdutos[index]);
-                    }
-                  });
-                },
-                icon: noCarrinho
-                    ? const Icon(Icons.add_circle, color: Colors.red)
-                    : const Icon(Icons.add_circle_outlined),
-              ),
-            );
-          }),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            if (_carrinho.isNotEmpty) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => CarrinhoSubTotal(produto: _carrinho)),
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey, width: 5)),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("ID Produto : ${produto.idProduto}"),
+                              Text("Nome: ${produto.nome}"),
+                              Text("Valor de Custo ${produto.valorCusto}"),
+                              Text("Valor de Venda ${produto.valorVenda}"),
+                              Text("Validade ${produto.validade}"),
+                              Text("ID Fabricante : ${produto.idFabricante}"),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          children: [
+                            Icon(Icons.add),
+                            SizedBox(height: 35),
+                            Icon(Icons.remove)
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               );
-            }
-          },
-          tooltip: 'Carrinho de compras',
-          child: Badge(
-            label: Text('${_carrinho.length}'),
-            child: const Icon(Icons.shopping_basket),
-          )),
-    );
+            }));
   }
 }
 
@@ -185,7 +159,7 @@ class CarrinhoSubTotalState extends State<CarrinhoSubTotal> {
                       onPressed: () {
                         setState(() {
                           if (quantidades[index] >=
-                              widget.produto[index].idFabricante) {
+                              widget.produto[index].idProduto) {
                             quantidades[index] =
                                 widget.produto[index].idFabricante;
                           } else {
@@ -198,7 +172,7 @@ class CarrinhoSubTotalState extends State<CarrinhoSubTotal> {
                 ),
                 Text(widget.produto[index].nome),
                 Text(c.format(
-                    widget.produto[index].idFabricante * quantidades[index])),
+                    widget.produto[index].idProduto * quantidades[index])),
               ],
             ),
           );

@@ -3,16 +3,14 @@ import 'package:flutter_application_1/produtos.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class perfil extends StatefulWidget {
+class Perfil extends StatefulWidget {
   final int idlogin;
-
-  const perfil({super.key, required this.idlogin});
-
+  const Perfil({super.key, required this.idlogin});
   @override
-  State<perfil> createState() => _perfilState();
+  State<Perfil> createState() => _perfilState();
 }
 
-class _perfilState extends State<perfil> {
+class _perfilState extends State<Perfil> {
   String msg = "";
   TextEditingController controlNome = TextEditingController();
   TextEditingController controlSobrenome = TextEditingController();
