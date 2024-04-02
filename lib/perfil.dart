@@ -11,6 +11,7 @@ class Perfil extends StatefulWidget {
 }
 
 class _perfilState extends State<Perfil> {
+  late var data;
   String msg = "";
   TextEditingController controlNome = TextEditingController();
   TextEditingController controlSobrenome = TextEditingController();
@@ -23,7 +24,7 @@ class _perfilState extends State<Perfil> {
       "login_idlogin": widget.idlogin.toString(),
     });
 
-    var data = json.decode(response.body);
+    data = json.decode(response.body);
 
     if (data.length != 0) {
       setState(() {
@@ -45,8 +46,6 @@ class _perfilState extends State<Perfil> {
           "site": controlSite.text,
           "telefone": controlTelefone.text
         });
-
-    //var data = json.decode(response.body);
 
     if (response.statusCode == 200) {
       setState(() {
@@ -115,12 +114,12 @@ class _perfilState extends State<Perfil> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Produtos()),
+                  MaterialPageRoute(builder: (context) => Produtos(idPerfil: int.parse(data[0]["idperfil"]))),
                 );
               },
               child: Text("Produtos"),
             ),
-             SizedBox(height: 15),
+            SizedBox(height: 15),
             Text(msg),
           ],
         ),

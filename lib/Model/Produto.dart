@@ -7,12 +7,15 @@ class Produto {
   int idFabricante;
 
   Produto(
-      {required this.idProduto,
-      required this.nome,
-      required this.valorCusto,
-      required this.valorVenda,
-      required this.validade,
-      required this.idFabricante});
+      {
+        required this.idProduto,
+        required this.nome,
+        required this.valorCusto,
+        required this.valorVenda,
+        required this.validade,
+        required this.idFabricante
+      }
+    );
 
   Produto.fromJson(Map<String, dynamic> dataJson)
       : idProduto = int.parse(dataJson["idproduto"]),

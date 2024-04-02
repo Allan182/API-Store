@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_application_1/Model/Produto.dart';
+import 'package:flutter_application_1/subTotal.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-
-
 final List<Produto> _carrinho = [];
 
 class Produtos extends StatefulWidget {
-  const Produtos({Key? key}) : super(key: key);
+  final int idPerfil;
+  const Produtos({Key? key, required this.idPerfil}) : super(key: key);
 
   @override
   State<Produtos> createState() => _ProdutosState();
@@ -18,6 +18,7 @@ class Produtos extends StatefulWidget {
 
 class _ProdutosState extends State<Produtos> {
   List listaProdutos = [];
+  List<Produto> carrinho = [];
 
   @override
   void initState() {
@@ -36,162 +37,96 @@ class _ProdutosState extends State<Produtos> {
         listaProdutos.add(Produto.fromJson(e));
       }
     }
-    setState((){});
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text('Produtos'),
-        ),
-        body: ListView.builder(
-            itemCount: listaProdutos.length,
-            itemBuilder: (BuildContext context, int index) {
-              Produto produto = listaProdutos[index];
-
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey, width: 5)),
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("ID Produto : ${produto.idProduto}"),
-                              Text("Nome: ${produto.nome}"),
-                              Text("Valor de Custo ${produto.valorCusto}"),
-                              Text("Valor de Venda ${produto.valorVenda}"),
-                              Text("Validade ${produto.validade}"),
-                              Text("ID Fabricante : ${produto.idFabricante}"),
-                            ],
-                          ),
-                        ),
-                        Column(
-                          children: [
-                            Icon(Icons.add),
-                            SizedBox(height: 35),
-                            Icon(Icons.remove)
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }));
-  }
-}
-
-class CarrinhoSubTotal extends StatefulWidget {
-  final List<Produto> produto;
-  const CarrinhoSubTotal({Key? key, required this.produto}) : super(key: key);
-
-  @override
-  CarrinhoSubTotalState createState() => CarrinhoSubTotalState();
-}
-
-class CarrinhoSubTotalState extends State<CarrinhoSubTotal> {
-  final NumberFormat c = NumberFormat.currency(locale: "pt_BR", symbol: "R\$");
-  List<int> quantidades = [];
-  var subtotal = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    quantidades = List<int>.filled(_carrinho.length, 1);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    void calculaSubTotal(List produtos) {
-      subtotal = 0.0;
-      for (int i = 0; i < produtos.length; i++) {
-        subtotal += produtos[i].preco * quantidades[i];
-      }
-    }
-
-    calculaSubTotal(_carrinho);
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Carrinho'),
+        title: const Text('Produtos'),
       ),
       body: ListView.builder(
-        itemCount: _carrinho.length,
-        itemBuilder: (BuildContext context, int index) {
-          return ListTile(
-            onTap: () {
+          itemCount: listaProdutos.length,
+          itemBuilder: (BuildContext context, int index) {
+            Produto produto = listaProdutos[index];
+
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Container(
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey, width: 5)),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("ID Produto : ${produto.idProduto}"),
+                            Text("Nome: ${produto.nome}"),
+                            Text("Valor de Custo ${produto.valorCusto}"),
+                            Text("Valor de Venda ${produto.valorVenda}"),
+                            Text("Validade ${produto.validade}"),
+                            Text("ID Fabricante : ${produto.idFabricante}"),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        children: [
+                          IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  if (!carrinho.contains(produto)) {
+                                    carrinho.add(produto);
+                                  }
+                                });
+                              },
+                              icon: Icon(Icons.add)),
+                          const SizedBox(height: 35),
+                          IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  if (carrinho.contains(produto)) {
+                                    carrinho.remove(produto);
+                                  }
+                                });
+                              },
+                              icon: const Icon(Icons.remove))
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+      bottomNavigationBar: const BottomAppBar(
+        shape: CircularNotchedRectangle(),
+        color: Colors.green,
+        child: IconTheme(
+            data: IconThemeData(color: Colors.green),
+            child: Row(
+                children: <Widget>[SizedBox(height: 64), Text('IFES Store')])),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            if (carrinho.isNotEmpty) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      ProdutoDetalhe(produto: _carrinho[index]),
-                ),
+                    builder: (context) => CarrinhoSubTotal(produto: carrinho)),
               );
-            },
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.remove_circle_outline),
-                      onPressed: () {
-                        setState(() {
-                          if (quantidades[index] > 1) {
-                            quantidades[index]--;
-                          } else {
-                            _carrinho.remove(_carrinho[index]);
-                          }
-                        });
-                      },
-                    ),
-                    Text(quantidades[index].toString()),
-                    IconButton(
-                      icon: const Icon(Icons.add_circle_outline),
-                      onPressed: () {
-                        setState(() {
-                          if (quantidades[index] >=
-                              widget.produto[index].idProduto) {
-                            quantidades[index] =
-                                widget.produto[index].idFabricante;
-                          } else {
-                            quantidades[index]++;
-                          }
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                Text(widget.produto[index].nome),
-                Text(c.format(
-                    widget.produto[index].idProduto * quantidades[index])),
-              ],
-            ),
-          );
-        },
-      ),
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        color: Colors.green,
-        child: IconTheme(
-          data: const IconThemeData(color: Colors.green),
-          child: Row(
-            children: <Widget>[
-              const SizedBox(height: 64),
-              Text('Subtotal: ${c.format(subtotal)}',
-                  style: const TextStyle(fontSize: 16, color: Colors.white)),
-            ],
-          ),
-        ),
-      ),
+            }
+          },
+          tooltip: 'Carrinho de compras',
+          child: Badge(
+            label: Text('${carrinho.length}'),
+            child: const Icon(Icons.shopping_basket),
+          )),
     );
   }
 }
@@ -199,7 +134,7 @@ class CarrinhoSubTotalState extends State<CarrinhoSubTotal> {
 class ProdutoDetalhe extends StatelessWidget {
   final Produto produto;
 
-  const ProdutoDetalhe({Key? key, required this.produto}) : super(key: key);
+  const ProdutoDetalhe({super.key, required this.produto});
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +154,7 @@ class ProdutoDetalhe extends StatelessWidget {
             Text(c.format(produto.idFabricante)),
             const SizedBox(height: 16),
             noCarrinho ? const Text('No carrinho!') : const Text(''),
-            Wrap(
+            const Wrap(
               spacing: 8,
               runSpacing: 4,
             ),
