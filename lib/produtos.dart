@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_application_1/Model/ItemCarrinho.dart';
 import 'package:flutter_application_1/Model/Produto.dart';
 import 'package:flutter_application_1/subTotal.dart';
 import 'package:intl/intl.dart';
@@ -10,7 +10,7 @@ final List<Produto> _carrinho = [];
 
 class Produtos extends StatefulWidget {
   final int idPerfil;
-  const Produtos({Key? key, required this.idPerfil}) : super(key: key);
+  const Produtos({super.key, required this.idPerfil});
 
   @override
   State<Produtos> createState() => _ProdutosState();
@@ -18,7 +18,7 @@ class Produtos extends StatefulWidget {
 
 class _ProdutosState extends State<Produtos> {
   List listaProdutos = [];
-  List<Produto> carrinho = [];
+  List<ItemCarrinho> carrinho = [];
 
   @override
   void initState() {
@@ -29,7 +29,6 @@ class _ProdutosState extends State<Produtos> {
   Future<void> _produtos() async {
     final response =
         await http.get(Uri.parse("http://localhost/flutterconn/produtos.php"));
-
     var data = json.decode(response.body);
 
     if (data.length != 0) {
@@ -79,18 +78,42 @@ class _ProdutosState extends State<Produtos> {
                           IconButton(
                               onPressed: () {
                                 setState(() {
-                                  if (!carrinho.contains(produto)) {
-                                    carrinho.add(produto);
+                                  var itemCarrinho = carrinho.firstWhere(
+                                      (item) =>
+                                          item.produto.idProduto ==
+                                          produto.idProduto,
+                                      orElse: () => ItemCarrinho(
+                                          produto: produto, qtd: 0));
+
+                                  if (itemCarrinho.qtd == 0) {
+                                    carrinho.add(itemCarrinho);
                                   }
+                                  itemCarrinho.qtd += 1;
                                 });
                               },
-                              icon: Icon(Icons.add)),
+                              icon: const Icon(Icons.add)),
                           const SizedBox(height: 35),
                           IconButton(
                               onPressed: () {
                                 setState(() {
-                                  if (carrinho.contains(produto)) {
-                                    carrinho.remove(produto);
+                                  var itemCarrinho = carrinho.firstWhere(
+                                      (item) =>
+                                          item.produto.idProduto ==
+                                          produto.idProduto,
+                                      orElse: () => ItemCarrinho(
+                                          produto: produto, qtd: -1));
+
+                                  if (itemCarrinho.qtd != -1) {
+                                    itemCarrinho.qtd -= 1;
+
+                                    if (itemCarrinho.qtd == 0) {
+                                      carrinho.remove(itemCarrinho);
+                                    }
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                "Este Produto Não Existe no seu Carrinho!")));
                                   }
                                 });
                               },
@@ -118,8 +141,11 @@ class _ProdutosState extends State<Produtos> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => CarrinhoSubTotal(produto: carrinho)),
+                    builder: (context) => CarrinhoSubTotal(carrinho: carrinho)),
               );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Adicione um Produto no Carrinho!")));
             }
           },
           tooltip: 'Carrinho de compras',

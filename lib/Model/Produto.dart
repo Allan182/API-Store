@@ -7,15 +7,12 @@ class Produto {
   int idFabricante;
 
   Produto(
-      {
-        required this.idProduto,
-        required this.nome,
-        required this.valorCusto,
-        required this.valorVenda,
-        required this.validade,
-        required this.idFabricante
-      }
-    );
+      {required this.idProduto,
+      required this.nome,
+      required this.valorCusto,
+      required this.valorVenda,
+      required this.validade,
+      required this.idFabricante});
 
   Produto.fromJson(Map<String, dynamic> dataJson)
       : idProduto = int.parse(dataJson["idproduto"]),
@@ -24,4 +21,9 @@ class Produto {
         valorVenda = double.parse(dataJson["valorVenda"]),
         validade = DateTime.parse(dataJson["validade"]),
         idFabricante = int.parse(dataJson["fabricante_idfabricante"]);
+
+  @override
+  String toString() {
+    return "$nome";
+  }
 }
